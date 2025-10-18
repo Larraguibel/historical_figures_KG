@@ -1,7 +1,6 @@
 # 🧠 Historical Figures Knowledge Graph
 
 **Historical Figures Knowledge Graph** es un proyecto para la construcción automatizada de un **grafo de conocimiento** sobre personajes históricos de distintos países, combinando información estructurada desde **Wikidata** y contenido textual desde **Wikipedia en español**.  
-Su objetivo es crear una base reproducible para el análisis, exploración y visualización de redes históricas —personas, ocupaciones, lugares y vínculos culturales— a través de datos enlazados (*Linked Open Data*).
 
 ---
 
