@@ -1,0 +1,10 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix wd: <http://www.wikidata.org/entity/> .
+@prefix ex: <http://example.org/> .
+
+ex:USPersonShape a sh:NodeShape ;
+    sh:targetClass wd:Q5 ;             # humano
+    sh:property [
+        sh:path wd:P27 ;               # propiedad país de ciudadanía
+        sh:hasValue wd:Q30 ;           # Estados Unidos
+    ] .

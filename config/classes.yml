@@ -1,0 +1,73 @@
+clases:
+  politica_gobierno:
+    label: "Política y Gobierno"
+    ocupaciones:
+      - Q82955    # político
+      - Q30461    # presidente
+      - Q40348    # abogado
+      - Q889821   # gobernador
+      - Q193391   # juez
+      - Q30185    # alcalde
+      - Q82933    # funcionario público (civil servant)
+  ciencia_tecnologia:
+    label: "Ciencia y Tecnología"
+    ocupaciones:
+      - Q901      # científico
+      - Q810689   # programador
+      - Q1650915  # investigador
+      - Q39631    # médico
+      - Q11063    # astrónomo
+      - Q170790   # matemático
+      - Q169470   # físico
+      - Q593644   # químico
+      - Q864398   # biólogo
+      - Q82594    # arquitecto
+      - Q81096    # ingeniero
+      - Q17319323 # astronauta
+  artes_entretenimiento:
+    label: "Artes y Entretenimiento"
+    ocupaciones:
+      - Q33999    # actor
+      - Q36834    # compositor
+      - Q36180    # escritor
+      - Q483501   # artista
+      - Q639669   # músico
+      - Q1028181  # pintor
+      - Q2526255  # director de cine
+      - Q33231    # fotógrafo
+      - Q1281618  # escultor
+      - Q177220   # cantante
+      - Q49757    # poeta
+      - Q1930187  # periodista
+  deporte:
+    label: "Deporte"
+    ocupaciones:
+      - Q2066131  # atleta
+      - Q10871364 # jugador de béisbol
+      - Q3665646  # jugador de baloncesto
+      - Q937857   # futbolista
+      - Q19204627 # futbolista americano
+      - Q10843402 # nadador de competición
+      - Q1142491  # tenista
+      - Q41583    # entrenador deportivo
+      - Q128387   # boxeador
+      - Q1420914  # piloto de carreras
+      - Q2309784  # ciclista
+      - Q17793731 # gimnasta
+  negocios_industria:
+    label: "Negocios e Industria"
+    ocupaciones:
+      - Q43845    # empresario (businessperson)
+      - Q131524   # emprendedor (entrepreneur)
+      - Q1862118  # ejecutivo (company executive)
+      - Q1328453  # magnate de los medios (media proprietor)
+  civico_movimientos_sociales:
+    label: "Cívico y Movimientos Sociales"
+    ocupaciones:
+      - Q15253558 # activista
+      - Q471635   # sindicalista (trade unionist)
+      - Q183034   # religioso (cleric)
+      - Q5248922  # filántropo (philanthropist)
+      - Q121594   # catedrático (professor)
+      - Q201788   # trabajador social (social worker)
+      - Q15894349 # revolucionario (revolutionary)
