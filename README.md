@@ -1,187 +1,116 @@
-# 🧠 Historical Figures Knowledge Graph
+# 🧠 historical_figures_KG
 
-**Historical Figures Knowledge Graph** es un proyecto para la construcción automatizada de un **grafo de conocimiento** sobre personajes históricos de distintos países, combinando información estructurada desde **Wikidata** y contenido textual desde **Wikipedia en español**.  
+Repositorio para la **construcción automatizada de grafos de conocimiento (Knowledge Graphs)** de personajes históricos de Estados Unidos, a partir de datos de **Wikidata**.
 
 ---
 
-## 📁 Estructura del proyecto
+## 🚀 Objetivo general
+
+Extraer entidades relacionadas con personajes históricos de Estados Unidos y construir, para cada uno, un **grafo de conocimiento individual de grado 1**, garantizando diversidad entre clases (políticos, artistas, científicos, deportistas, etc.) y filtrando las entidades asociadas al contexto estadounidense.
+
+---
+
+## 🧩 Pipeline funcional
+
+1. **Definir clases históricas** → Se especifican 5 categorías de personajes para asegurar diversidad temática.  
+2. **Muestrear sujetos** → Se extrae una muestra balanceada de humanos (Q5, P27=Q30) en Wikidata, distribuidos entre las clases.  
+3. **Extraer relaciones directas (grado‑1)** → Se obtienen los claims truthy (wdt:Pxx → wd:Qxx) para cada personaje.  
+4. **Filtrar por contexto estadounidense** → Se mantienen solo las entidades con vínculos a EE.UU. mediante P27, P17, P131, P159 o P276.  
+5. **Asignar etiquetas** → Se consultan las etiquetas en español o inglés de los QIDs involucrados.  
+6. **Construir el grafo individual** → Se crea un grafo RDF con el personaje como nodo raíz y sus entidades conectadas.  
+7. **Guardar salida** → Se exporta cada grafo en formato `.ttl` (RDF/Turtle) dentro de la carpeta `graphs/`.
+
+---
+
+## 📁 Estructura del repositorio
 
 ```
 historical_figures_KG/
-├── config/
-│   ├── classes.yml          # Definición de clases/ocupaciones por país o categoría
-│   ├── property_map.yml     # Mapeo de propiedades Infobox ↔ Wikidata PID
-│   └── shapes.ttl           # Esquema SHACL para validar los grafos RDF
+├── config/                     # Archivos de configuración
+│   ├── classes.yml             # Definición de clases históricas y ocupaciones
+│   ├── property_map.yml        # Mapeo opcional de propiedades de interés
+│   └── shapes.ttl              # Esquemas o validadores SHACL (opcional)
 │
-├── data/
-│   ├── cache_wd/            # Caché local de respuestas SPARQL desde Wikidata
-│   ├── cache_wiki/          # Caché local de páginas procesadas desde Wikipedia
-│   └── subjects.csv         # Lista de sujetos seleccionados (QID, título, clase)
+├── data/                       # Datos y caché
+│   ├── cache_wd/               # Respuestas SPARQL cacheadas
+│   └── subjects.csv            # Muestra de personajes a procesar
 │
-├── graphs/                  # Grafos RDF o NetworkX exportados (salida final)
-├── logs/                    # Registros de ejecución
+├── graphs/                     # Grafos RDF generados
+│   ├── full/                   # Grafos completos (todas las propiedades)
+│   └── sampled/                # Grafos reducidos o muestreados
+│
+├── logs/                       # Logs del proceso
 │
 ├── src/
-│   ├── 0_setup_project.py   # Inicialización del entorno y validación de configuración
-│   ├── 1_sample_subjects.py # Extracción de entidades humanas desde Wikidata
-│   └── 2_fetch_wikipedia.py # Descarga de páginas de Wikipedia y parsing de infoboxes
+│   ├── setup_project.py        # Inicializa la estructura del proyecto
+│   └── kg/
+│       ├── pipeline/           # Scripts de orquestación
+│       │   ├── sample_subjects.py  # Extrae la muestra de personajes
+│       │   └── run_wd.py           # Ejecuta el pipeline completo
+│       │
+│       └── wd/                 # Funciones de interacción con Wikidata
+│           ├── utils.py        # SPARQL wrapper, caché y etiquetas
+│           ├── truthy.py       # Obtención de relaciones truthy (wdt:Pxx)
+│           ├── filter_usa.py   # Filtrado de entidades relacionadas con EE.UU.
+│           └── build.py        # Construcción y serialización de grafos RDF
 │
-├── requirements.txt         # Dependencias del entorno Python
-└── README.md                # Este archivo
+├── README.md                   # (este archivo)
+└── requirements.txt            # Dependencias del proyecto
 ```
 
 ---
 
-## 🚀 Flujo general
+## 🧠 Tecnologías principales
 
-El pipeline consta de **tres etapas principales**:
+- **Python 3.9+**
+- **SPARQLWrapper** — consultas a Wikidata
+- **rdflib** — creación y exportación de grafos RDF
+- **PyYAML** — lectura de archivos de configuración
+- **tqdm** — seguimiento visual de progreso
 
-### **1️⃣ Setup del proyecto**
-Archivo: [`src/0_setup_project.py`](src/0_setup_project.py)  
-Crea las carpetas necesarias (`data/`, `graphs/`, `logs/`, etc.) y valida que existan los archivos de configuración requeridos:
-- `config/classes.yml` — define las clases u ocupaciones a consultar.
-- `config/property_map.yml` — traduce los campos del infobox de Wikipedia a propiedades Wikidata (PID).  
-Además, imprime en consola cuántas clases y mapeos se detectaron.
+---
 
-Ejemplo de ejecución:
-```bash
-python src/0_setup_project.py
+## ⚙️ Ejecución básica
+
+1. **Inicializar proyecto**
+   ```bash
+   python src/setup_project.py
+   ```
+
+2. **Muestrear personajes históricos**
+   ```bash
+   python -m kg.pipeline.sample_subjects
+   ```
+
+3. **Construir grafos Wikidata-only**
+   ```bash
+   python -m kg.pipeline.run_wd
+   ```
+
+Los resultados se guardarán en `graphs/full/` como archivos `.ttl`.
+
+---
+
+## 🧭 Estructura del grafo
+
+Cada grafo sigue la forma:
+
+```
+:Personaje_Qxxxx a schema:Person ;
+    wdt:P27 wd:Q30 ;
+    wdt:P106 wd:Q33999 ;
+    wdt:P102 wd:Q29468 ;
+    ...
 ```
 
----
-
-### **2️⃣ Muestreo de sujetos desde Wikidata**
-Archivo: [`src/1_sample_subjects.py`](src/1_sample_subjects.py)  
-Usa consultas SPARQL para extraer un subconjunto de personas históricas con:
-- Nacionalidad estadounidense (por defecto),
-- Ocupaciones definidas en `classes.yml`,
-- Y que tengan artículo en Wikipedia en español.  
-
-Cada consulta devuelve un conjunto de QIDs y títulos asociados, que se almacenan en `data/subjects.csv` con las columnas:
-```
-qid, eswiki_title, clase
-```
-El script maneja límites de peticiones y espera entre solicitudes (`sleep_s`) para evitar bloqueos del endpoint.
-
-Ejemplo:
-```bash
-python src/1_sample_subjects.py
-```
+Solo se incluyen entidades **de grado 1** y filtradas por pertenencia o relación con EE.UU.
 
 ---
 
-### **3️⃣ Extracción de información desde Wikipedia**
-Archivo: [`src/2_fetch_wikipedia.py`](src/2_fetch_wikipedia.py)  
-Lee `data/subjects.csv`, itera sobre los sujetos y descarga los metadatos de cada página usando [`wptools`](https://github.com/siznax/wptools): título, resumen, infobox, enlaces, claims, etc.  
-Cada sujeto se guarda como archivo JSON en `data/cache_wiki/` con su QID como nombre.
+## 🧾 Créditos
 
-Ejemplo:
-```bash
-python src/2_fetch_wikipedia.py
-```
-
----
-
-## ⚙️ Archivos de configuración
-
-### `config/classes.yml`
-Define las clases o categorías de interés (por ejemplo, científicos, artistas, políticos) y sus QIDs asociados en Wikidata:
-
-```yaml
-clases:
-  cientificos:
-    ocupaciones: [Q901, Q169470, Q121594]
-  artistas:
-    ocupaciones: [Q483501, Q1028181, Q33999]
-```
-
----
-
-### `config/property_map.yml`
-Asocia los campos del *infobox* de Wikipedia con las propiedades equivalentes en Wikidata (PID).  
-Esto permite mapear datos estructurados de Wikipedia hacia el grafo RDF.
-
-```yaml
-infobox_to_pid:
-  nacimiento: P569
-  fallecimiento: P570
-  ocupacion: P106
-  nacionalidad: P27
-```
-
----
-
-### `config/shapes.ttl`
-Archivo SHACL para validar que los nodos y relaciones generadas cumplan con las restricciones definidas (por ejemplo, que cada persona tenga una fecha de nacimiento y nacionalidad válidas).  
-
-Ejemplo de forma:
-```ttl
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix ex: <http://example.org/schema#> .
-
-ex:PersonShape a sh:NodeShape ;
-    sh:targetClass ex:Person ;
-    sh:property [
-        sh:path ex:birthDate ;
-        sh:datatype xsd:dateTime ;
-        sh:minCount 1 ;
-    ] .
-```
-
----
-
-## 🧩 Dependencias
-
-El proyecto requiere Python ≥ 3.9 y las librerías listadas en `requirements.txt`.  
-Ejemplo de instalación:
-
-```bash
-pip install -r requirements.txt
-```
-
-Principales dependencias:
-- `wptools` — extracción de datos de Wikipedia  
-- `SPARQLWrapper` — consultas SPARQL a Wikidata  
-- `PyYAML`, `tqdm`, `pandas` (opcional), `rdflib` (para grafo RDF)
-
----
-
-## 📊 Salida esperada
-
-| Etapa | Archivo / Carpeta | Contenido |
-|-------|--------------------|------------|
-| Muestreo | `data/subjects.csv` | Lista de sujetos con QID, título y clase |
-| Wikipedia | `data/cache_wiki/*.json` | Páginas procesadas con infobox y extractos |
-| RDF / Grafo | `graphs/` | (Pendiente) Exportaciones `.ttl`, `.nt`, o `.graphml` |
-| Logs | `logs/` | Mensajes de ejecución y errores |
-
----
-
-## 🧠 Próximos pasos
-
-- [ ] Generar grafo RDF combinando claims + infoboxes.  
-- [ ] Validar nodos con `shapes.ttl` (SHACL).  
-- [ ] Crear visualizaciones interactivas (por ejemplo, con `pyvis` o `networkx`).  
-- [ ] Extender a otros países (`P27`) y traducir resultados.
-
----
-
-## 📜 Licencia
-
-Este proyecto utiliza datos de **Wikidata** y **Wikipedia**, ambos disponibles bajo licencias abiertas:
-- [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
-- [GNU Free Documentation License](https://www.gnu.org/licenses/fdl.html)
-
-El código fuente está bajo licencia **MIT**, salvo indicación contraria.
-
----
-
-## ✨ Autor
-
-Desarrollado por **Diego Larraguibel**  
+Proyecto desarrollado por **Diego Larraguibel**  
 Pontificia Universidad Católica de Chile  
-Contacto: [dlarraguibel@uc.cl](mailto:dlarraguibel@uc.cl)
+(M3 MacBook Pro · Python 3.9.6 · venv)
 
 ---
-
-> “Construir un grafo de conocimiento es reconstruir las conexiones invisibles de la historia.”
