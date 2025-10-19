@@ -210,3 +210,4 @@ __marimo__/
 # others
 .DS.Store
 data/
+graphs/full/
