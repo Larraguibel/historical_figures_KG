@@ -1,15 +1,18 @@
 # src/run_wd_pipeline.py
+# Contiene las herramientas básicas para comunicarse con Wikidata vía SPARQL.
+
 from __future__ import annotations
 from pathlib import Path
 import csv, random, yaml
 from tqdm import tqdm
+import re
 
 from kg.wd.truthy import truthy_edges
 from kg.wd.filter_usa import filter_us
 from kg.wd.utils import labels_es
 from kg.wd.build import build_degree1_graph, save_ttl
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 SUBJECTS_CSV = PROJECT_ROOT / "data" / "subjects.csv"
 OUT_FULL     = PROJECT_ROOT / "graphs" / "full"
 OUT_SAMPLED  = PROJECT_ROOT / "graphs" / "sampled"
@@ -60,12 +63,18 @@ if __name__ == "__main__":
 
         # 1) truthy edges
         edges = truthy_edges(root)
+        _P_RE = re.compile(r"^P\d+$")
+        edges = [(P, Q) for (P, Q) in edges if _P_RE.match(P) and Q.startswith("Q")]
         if not edges:
             continue
 
         # 2) filtro USA (sobre objetos)
         objs = [q for _, q in edges]
-        ok_objs = filter_us(objs)
+        try:
+            ok_objs = filter_us(objs)   # puede tardar; ahora está más robusto
+        except Exception as e:
+            print(f"[warn] filtro USA falló para {root}: {e}")
+            continue
         edges_us = [(P,Q) for (P,Q) in edges if Q in ok_objs]
         if not edges_us:
             continue

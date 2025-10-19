@@ -6,7 +6,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 from urllib.error import URLError
 from time import time, sleep
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 CFG_CLASSES = PROJECT_ROOT / "config" / "classes.yml"
 OUT_CSV     = PROJECT_ROOT / "data" / "subjects.csv"
 
@@ -87,6 +87,6 @@ def write_csv(rows):
             w.writerow([qid, title, clase])
 
 if __name__ == "__main__":
-    rows = sample_per_class(limit_per_class=100, sleep_s=0.1)
+    rows = sample_per_class(limit_per_class=50, sleep_s=0.1)
     write_csv(rows)
     print(f"\n✅ Guardado: {OUT_CSV} ({len(rows)} filas antes de eliminar duplicados.)")
