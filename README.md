@@ -109,7 +109,7 @@ Solo se incluyen entidades **de grado 1** y filtradas por pertenencia o relació
 
 ## 🧾 Créditos
 
-Proyecto desarrollado por **Diego Larraguibel**  
+Proyecto desarrollado por **~Diego Larraguibel~** **ChatGPT**
 Pontificia Universidad Católica de Chile  
 (M3 MacBook Pro · Python 3.9.6 · venv)
 
