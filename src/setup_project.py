@@ -11,7 +11,6 @@ DIRS = [
     PROJECT_ROOT / "data" / "cache_wd",
     PROJECT_ROOT / "graphs",
     PROJECT_ROOT / "logs",
-    PROJECT_ROOT / "config" / "countries.yml",
 ]
 
 def ensure_dirs():

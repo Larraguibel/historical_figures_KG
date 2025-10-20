@@ -29,10 +29,10 @@ def filter_by_country(qids: Iterable[str],
     en 3 pasadas:
       1) Directo: P27 = country_qid  (nacionalidad)  o  P17 = country_qid  (país)
       2) Vía P131 hasta 3 saltos (sin usar '*')
-      3) P159 (HQ) o P276 (situado en) con lugar en el país (directo o vía P131 1–2 saltos)
+      3) P159 (HQ) o P276 (situado en) con lugar en el país (directo o vía P131 1-2 saltos)
 
     Parámetros:
-      - qids: iterable de QIDs candidatos (solo se consideran Q\d+)
+      - qids: iterable de QIDs candidatos (solo se consideran Q\\d+)
       - country_qid: QID del país objetivo (ej. 'Q30' EE. UU., 'Q183' Alemania)
       - batch_p1/p2/p3: tamaños de lote por pasada para evitar timeouts en WDQS
     """
