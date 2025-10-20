@@ -1,0 +1,68 @@
+# config/countries.yml
+default: Q30            # país por defecto (EE. UU.)
+aliases:                # resoluciones rápidas por ISO/name
+  us: Q30
+  usa: Q30
+  united states: Q30
+  estados unidos: Q30
+  ar: Q414
+  argentina: Q414
+  de: Q183
+  germany: Q183
+  alemania: Q183
+  fr: Q142
+  france: Q142
+  francia: Q142
+  cn: Q148
+  china: Q148
+  uk: Q145
+  united kingdom: Q145
+  reino unido: Q145
+  es: Q29
+  spain: Q29
+  españa: Q29
+
+# --- Latinoamérica ---
+  mx: Q96
+  mexico: Q96
+  méxico: Q96
+  gt: Q774
+  guatemala: Q774
+  hn: Q783
+  honduras: Q783
+  sv: Q792
+  el salvador: Q792
+  ni: Q811
+  nicaragua: Q811
+  cr: Q800
+  costa rica: Q800
+  pa: Q804
+  panama: Q804
+  panamá: Q804
+  cu: Q241
+  cuba: Q241
+  do: Q786
+  dominican republic: Q786
+  república dominicana: Q786
+  pr: Q1183
+  puerto rico: Q1183
+  co: Q739
+  colombia: Q739
+  ve: Q717
+  venezuela: Q717
+  ec: Q736
+  ecuador: Q736
+  pe: Q419
+  peru: Q419
+  perú: Q419
+  bo: Q750
+  bolivia: Q750
+  cl: Q298
+  chile: Q298
+  py: Q733
+  paraguay: Q733
+  uy: Q77
+  uruguay: Q77
+  br: Q155
+  brazil: Q155
+  brasil: Q155
