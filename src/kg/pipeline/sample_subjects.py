@@ -52,10 +52,8 @@ SELECT ?person ?personLabel ?article WHERE {{
   ?person wdt:P31 wd:Q5 ;          # humano
           wdt:P27 wd:{country_qid} ;
           wdt:P106 ?occupation .
-  OPTIONAL {{
-    ?article schema:about ?person ;
-             schema:isPartOf <https://{wiki_lang}.wikipedia.org/> .
-  }}
+  ?article schema:about ?person ;
+           schema:isPartOf <https://{wiki_lang}.wikipedia.org/> .
   SERVICE wikibase:label {{ bd:serviceParam wikibase:language "es,en". }}
 }}
 LIMIT {limit}
