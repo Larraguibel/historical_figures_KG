@@ -59,25 +59,49 @@ SELECT ?person ?personLabel ?article WHERE {{
 LIMIT {limit}
 """
 
-def run_sparql(query: str, sleep_s=0.0):
+def run_sparql(query: str, sleep_s=0.2, timeout_s: int = 130, retries: int = 6):
+    """
+    Ejecuta una consulta SPARQL con timeout y reintentos.
+    - timeout_s: segundos para abortar la request (tanto conexión como lectura).
+    - retries: número total de intentos antes de fallar.
+    """
+    import random, socket
+    from urllib.error import URLError, HTTPError
+
     sparql = SPARQLWrapper(ENDPOINT, agent="kg-country-agnostic/0.1 (mailto:example@example.com)")
-    sparql.setMethod(POST)              # evita URLs largas
+    sparql.setMethod(POST)              # evita URLs largas en GET
     sparql.setReturnFormat(JSON)
+    sparql.setTimeout(timeout_s)        # <- CLAVE: timeout real
     sparql.setQuery(query)
-    # manejo básico de rate limit
-    for attempt in range(6):
+
+    backoff = 1.0
+    last_err = None
+    for attempt in range(1, retries + 1):
         try:
             res = sparql.query().convert()
             if sleep_s > 0:
                 sleep(sleep_s)
             return res
-        except URLError:
-            sleep(2 + attempt)
+        except (HTTPError, URLError, socket.timeout, TimeoutError) as e:
+            last_err = e
+            # reintentos con backoff exponencial + jitter
+            delay = backoff + random.uniform(0, 0.6)
+            print(f"  [warn] intento {attempt}/{retries} falló ({type(e).__name__}: {e}). Reintentando en {delay:.1f}s...")
+            sleep(delay)
+            backoff = min(backoff * 1.8, 8.0)
         except Exception as e:
-            if "rate limit" in str(e).lower():
-                sleep(2 + attempt)
+            # otros errores: si menciona rate limit, reintenta; si no, aborta
+            last_err = e
+            msg = str(e).lower()
+            if "rate limit" in msg or "throttl" in msg:
+                delay = backoff + random.uniform(0, 0.6)
+                print(f"  [warn] intento {attempt}/{retries} (rate limit). Reintentando en {delay:.1f}s...")
+                sleep(delay)
+                backoff = min(backoff * 1.8, 8.0)
                 continue
             raise
+    # si agotó reintentos:
+    raise last_err
 
 def load_classes():
     with CFG_CLASSES.open("r", encoding="utf-8") as f:
@@ -89,7 +113,8 @@ def load_classes():
     return clases
 
 def sample_per_class(country_qid: str, wiki_lang: str = "es",
-                     limit_per_class: int = 30, sleep_s: float = 0.2):
+                     limit_per_class: int = 30, sleep_s: float = 0.2,
+                     timeout_s: int = 90, retries: int = 6):
     clases = load_classes()
     rows = []
     print("\nMuestreando sujetos por clase...")
@@ -111,22 +136,28 @@ def sample_per_class(country_qid: str, wiki_lang: str = "es",
             wiki_lang=wiki_lang,
             limit=limit_per_class
         )
-        data = run_sparql(q, sleep_s=sleep_s)
+
+        # --- envolvemos la query con try/except por clase ---
+        try:
+            data = run_sparql(q, sleep_s=sleep_s, timeout_s=timeout_s, retries=retries)
+        except Exception as e:
+            print(f"  [error] clase '{key}' falló tras reintentos: {e}")
+            continue
 
         n_bind = 0
         for b in data["results"]["bindings"]:
             qid = b["person"]["value"].split("/")[-1]
             art = b.get("article", {}).get("value")
-            # si hay artículo en ese idioma, usamos el título; si no, dejamos vacío
             local_title = ""
             if art:
-                local_title = art.split("/")[-1]  # título codificado
+                local_title = art.split("/")[-1]
             rows.append((qid, local_title, key))
             n_bind += 1
 
         elapsed = time() - start
         print(f"  → Encontrados: {n_bind} (en {elapsed:.1f}s)")
     return rows
+
 
 def write_csv(rows, out_csv: Path):
     out_csv.parent.mkdir(parents=True, exist_ok=True)
@@ -146,7 +177,9 @@ def main():
     ap.add_argument("--country", help="QID, ISO-2/3 o nombre del país (según config/countries.yml). Ej: Q183, de, germany, alemania.")
     ap.add_argument("--wiki-lang", default="es", help="Idioma del artículo de Wikipedia (default: es).")
     ap.add_argument("--limit-per-class", type=int, default=50, help="Máximo de sujetos por clase (default: 50).")
-    ap.add_argument("--sleep", type=float, default=0.12, help="Sleep entre llamadas SPARQL (default: 0.12s).")
+    ap.add_argument("--sleep", type=float, default=0.15, help="Sleep entre llamadas SPARQL (default: 0.12s).")
+    ap.add_argument("--timeout", type=int, default=100, help="Timeout por request SPARQL en segundos (default: 90).")
+    ap.add_argument("--retries", type=int, default=6, help="Reintentos por request (default: 6).")
     args = ap.parse_args()
 
     # Resolver país: si pasan --country, se respeta; si no, se toma desde project.yml
@@ -171,7 +204,9 @@ def main():
         country_qid=country_qid,
         wiki_lang=args.wiki_lang,
         limit_per_class=args.limit_per_class,
-        sleep_s=args.sleep
+        sleep_s=args.sleep,
+        timeout_s=args.timeout,
+        retries=args.retries,
     )
     write_csv(rows, out_csv)
     print(f"\n✅ Guardado: {out_csv} ({len(rows)} filas antes de eliminar duplicados.)")
